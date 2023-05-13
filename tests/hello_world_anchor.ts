@@ -12,7 +12,7 @@ describe("hello_world_anchor", () => {
   const myAccount = anchor.web3.Keypair.generate();
 
   // actions & assert 
-  it("Is initialized!", async () => {
+  it("SetData_initialization", async () => {
     const tx = await program.methods
     .initialize(new anchor.BN(1234))
     .accounts({
@@ -31,7 +31,7 @@ describe("hello_world_anchor", () => {
     assert.ok(account.data.eq(new anchor.BN(1234)));
   });
 
-  it("Is updated!", async () => {
+  it("SetData_update", async () => {
     const tx = await program.methods
     .update(new anchor.BN(9999))
     .accounts({
@@ -42,4 +42,40 @@ describe("hello_world_anchor", () => {
     const account = await program.account.myAccount.fetch(myAccount.publicKey);
     assert.ok(account.data.eq(new anchor.BN(9999)));
   });
+
+  const counterAccount = anchor.web3.Keypair.generate();
+
+  it("Count_init", async() => {
+    await program.methods
+    .initializeCounter()
+    .accounts({
+      counter: counterAccount.publicKey,
+      authority: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId,
+    })
+    .signers([counterAccount])
+    .rpc()
+
+    // Fetch the newly created account from the cluster.
+    const account = await program.account.counter.fetch(counterAccount.publicKey);
+
+    // Check it's state was initialized.
+    assert.ok(account.count.eq(new anchor.BN(0)));
+  });
+
+  it("Count_add_one", async() => {
+    await program.methods
+    .addOne()
+    .accounts({
+      counter: counterAccount.publicKey,
+    })
+    .rpc()
+
+    // Fetch the newly created account from the cluster.
+    const account = await program.account.counter.fetch(counterAccount.publicKey);
+
+    // Check it's state was initialized.
+    assert.ok(account.count.eq(new anchor.BN(1)));
+  });
+
 });

@@ -88,3 +88,5 @@ pub struct Update<'info> {
 pub struct MyAccount {
     pub data: u64,
 }
+
+// test
